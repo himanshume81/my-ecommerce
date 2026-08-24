@@ -10,12 +10,15 @@ export async function POST(request: Request) {
 			const error = await response.json().catch(() => ({})) as { message?: string };
 			return NextResponse.json({ message: error.message ?? "Unable to sign in" }, { status: response.status });
 		}
-		const tokens = await response.json();
-		if (!tokens.accessToken || !tokens.refreshToken) return NextResponse.json({ message: "Login response is missing tokens" }, { status: 502 });
+		const payload = await response.json() as { accessToken?: string; refreshToken?: string; access_token?: string; refresh_token?: string; data?: { accessToken?: string; refreshToken?: string; access_token?: string; refresh_token?: string } };
+		const tokens = payload.data ?? payload;
+		const accessToken = tokens.accessToken ?? tokens.access_token;
+		const refreshToken = tokens.refreshToken ?? tokens.refresh_token;
+		if (!accessToken || !refreshToken) return NextResponse.json({ message: "Login response is missing tokens" }, { status: 502 });
 		const secure = process.env.NODE_ENV === "production";
 		const result = NextResponse.json({ ok: true });
-		result.cookies.set("accessToken", tokens.accessToken, { httpOnly: true, secure, sameSite: "lax", maxAge: 900, path: "/" });
-		result.cookies.set("refreshToken", tokens.refreshToken, { httpOnly: true, secure, sameSite: "lax", maxAge: 60 * 60 * 24 * 30, path: "/" });
+		result.cookies.set("accessToken", accessToken, { httpOnly: true, secure, sameSite: "lax", maxAge: 900, path: "/" });
+		result.cookies.set("refreshToken", refreshToken, { httpOnly: true, secure, sameSite: "lax", maxAge: 60 * 60 * 24 * 30, path: "/" });
 		return result;
 	} catch {
 		return NextResponse.json({ message: "Unable to reach the authentication service" }, { status: 502 });

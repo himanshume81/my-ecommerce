@@ -24,8 +24,16 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}, retried 
 }
 
 export const authService = {
-  login: (payload: { email: string; password: string; userType: "user" }) => fetch(BFF_ROUTES.login, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }),
-  logout: () => fetch(BFF_ROUTES.logout, { method: "POST" }),
+  login: async (payload: { email: string; password: string; userType: "user" }) => {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 10000);
+    try {
+      return await fetch(BFF_ROUTES.login, { method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload), signal: controller.signal });
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  },
+  logout: () => fetch(BFF_ROUTES.logout, { method: "POST", credentials: "include" }),
 };
 export const userService = { update: <T>(id: string, payload: T) => apiFetch(`/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }) };
 export const productService = {

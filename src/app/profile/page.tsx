@@ -1,0 +1,11 @@
+"use client";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PageShell } from "@/components/common/page-shell";
+import { userService } from "@/services/api";
+
+const schema = z.object({ name: z.string().min(2, "Enter your name"), phoneNumber: z.string().min(7, "Enter a valid phone number") });
+type Values = z.infer<typeof schema>;
+export default function ProfilePage() { const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: { name: "", phoneNumber: "" } }); const submit = async (values: Values) => { try { await userService.update("me", values); form.setError("root", { message: "Profile updated." }); } catch { form.setError("root", { message: "We could not update your profile." }); } }; return <PageShell><section className="mx-auto max-w-md px-5 py-16 md:px-10 md:py-24"><h1 className="font-serif text-6xl tracking-[-.06em]">Your profile.</h1><form onSubmit={form.handleSubmit(submit)} className="mt-12 space-y-6"><div><label htmlFor="name" className="mb-2 block text-xs uppercase tracking-[.12em]">Name</label><input id="name" {...form.register("name")} className="w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--ink)]" />{form.formState.errors.name && <p role="alert" className="mt-2 text-xs text-[var(--clay)]">{form.formState.errors.name.message}</p>}</div><div><label htmlFor="phoneNumber" className="mb-2 block text-xs uppercase tracking-[.12em]">Phone number</label><input id="phoneNumber" {...form.register("phoneNumber")} className="w-full border-b border-[var(--line)] bg-transparent py-3 outline-none focus:border-[var(--ink)]" />{form.formState.errors.phoneNumber && <p role="alert" className="mt-2 text-xs text-[var(--clay)]">{form.formState.errors.phoneNumber.message}</p>}</div>{form.formState.errors.root && <p role="status" className="text-sm text-[var(--muted)]">{form.formState.errors.root.message}</p>}<button disabled={form.formState.isSubmitting} className="w-full bg-[var(--ink)] px-5 py-4 text-xs font-semibold uppercase tracking-[.14em] text-white disabled:opacity-50">Save profile</button></form></section></PageShell>; }

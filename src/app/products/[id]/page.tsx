@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PageShell } from "@/components/common/page-shell";
+import { getProduct } from "@/types/product";
+
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) { const product = getProduct((await params).id); if (!product) notFound(); return <PageShell><section className="mx-auto grid max-w-[1080px] gap-12 px-5 py-16 md:grid-cols-2 md:px-10 md:py-24"><div className="product-art flex aspect-square items-center justify-center" style={{ backgroundColor: product.color }}><span className="font-serif text-[180px] text-white/70">{product.art}</span></div><div className="flex flex-col justify-center"><Link href="/products" className="mb-10 text-xs uppercase tracking-[.14em] text-[var(--muted)]">← Back to collection</Link><p className="mb-3 text-[11px] uppercase tracking-[.2em] text-[var(--clay)]">{product.category}</p><h1 className="font-serif text-6xl tracking-[-.06em]">{product.name}</h1><p className="mt-5 text-lg">${product.price}</p><p className="mt-8 max-w-md text-sm leading-7 text-[var(--muted)]">{product.description}</p><Link href="/cart" className="mt-10 inline-flex w-fit bg-[var(--ink)] px-8 py-4 text-[12px] font-semibold uppercase tracking-[.14em] text-white">Add to bag</Link></div></section></PageShell>; }

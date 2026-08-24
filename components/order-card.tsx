@@ -1,0 +1,5 @@
+export type OrderSummary = { id: string; date: string; amount: number; status: string; items: number };
+
+export function OrderCard({ order }: { order: OrderSummary }) {
+  return <article className="grid gap-3 border-b border-[var(--line)] py-6 text-sm sm:grid-cols-4"><div><p className="text-[10px] uppercase tracking-[.14em] text-[var(--muted)]">Order</p><p className="mt-1 font-medium">{order.id}</p></div><div><p className="text-[10px] uppercase tracking-[.14em] text-[var(--muted)]">Date</p><p className="mt-1">{order.date}</p></div><div><p className="text-[10px] uppercase tracking-[.14em] text-[var(--muted)]">Items / amount</p><p className="mt-1">{order.items} · ${order.amount}</p></div><div><p className="text-[10px] uppercase tracking-[.14em] text-[var(--muted)]">Status</p><p className="mt-1 capitalize text-[var(--sage)]">{order.status}</p></div></article>;
+}

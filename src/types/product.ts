@@ -9,6 +9,32 @@ export type Product = {
   description?: string;
 };
 
+export type Category = {
+  id: number | string;
+  name: string;
+  slug?: string;
+};
+
+export type ProductApiRecord = Omit<Product, "category"> & {
+  category?: string | Category;
+  categoryId?: number | string;
+};
+
+export function normalizeProduct(product: ProductApiRecord, categories: Category[] = []): Product {
+  const category = typeof product.category === "string"
+    ? product.category
+    : product.category?.name ?? categories.find((item) => String(item.id) === String(product.categoryId))?.name ?? "Uncategorized";
+
+  return {
+    ...product,
+    price: Number(product.price),
+    category,
+    color: product.color ?? "#d3d8c9",
+    art: product.art ?? "◒",
+    note: product.note ?? "Considered everyday object",
+  };
+}
+
 export const products: Product[] = [
   { id: 1, name: "Ripple tumbler", category: "Kitchen", price: 28, color: "#d3d8c9", art: "◒", note: "Hand-finished stoneware", description: "A tactile everyday tumbler with a soft ripple profile." },
   { id: 2, name: "Linen throw", category: "Living", price: 94, color: "#d8c8b4", art: "▱", note: "European flax · oat", description: "Lightweight European flax, woven for quiet evenings." },

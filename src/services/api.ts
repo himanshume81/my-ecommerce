@@ -1,4 +1,7 @@
 import { BFF_ROUTES } from "@/constants/apiUrl";
+import type { Category, Product, ProductApiRecord } from "@/types/product";
+
+type ApiListResponse<T> = T[] | { data?: T[]; items?: T[] };
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -12,8 +15,10 @@ async function refreshSession() {
 }
 
 export async function apiFetch<T>(path: string, init: RequestInit = {}, retried = false): Promise<T> {
-  const response = await fetch(`${BFF_ROUTES.backend}${path}`, { ...init, credentials: "include", headers: { "Content-Type": "application/json", ...init.headers } });
-  if (response.status === 401 && !retried && await refreshSession()) return apiFetch<T>(path, init, true);
+  const baseUrl = typeof window === "undefined" ? process.env.API_URL : BFF_ROUTES.backend;
+  if (!baseUrl) throw new ApiError(503, "API_URL is not configured");
+  const response = await fetch(`${baseUrl}${path}`, { ...init, credentials: "include", headers: { "Content-Type": "application/json", ...init.headers } });
+  if (response.status === 401 && !retried && typeof window !== "undefined" && await refreshSession()) return apiFetch<T>(path, init, true);
   if (!response.ok) throw new ApiError(response.status, await response.text() || "Request failed");
   return response.status === 204 ? (undefined as T) : response.json();
 }
@@ -23,5 +28,11 @@ export const authService = {
   logout: () => fetch(BFF_ROUTES.logout, { method: "POST" }),
 };
 export const userService = { update: <T>(id: string, payload: T) => apiFetch(`/users/${id}`, { method: "PATCH", body: JSON.stringify(payload) }) };
-export const productService = { list: <T>() => apiFetch<T>("/products"), detail: <T>(id: string) => apiFetch<T>(`/products/${id}`) };
+export const productService = {
+  list: () => apiFetch<ApiListResponse<ProductApiRecord>>("/products"),
+  detail: (id: string) => apiFetch<ProductApiRecord>(`/products/${id}`),
+};
+export const categoryService = {
+  list: () => apiFetch<ApiListResponse<Category>>("/categories"),
+};
 export const orderService = { list: <T>(page: number, limit: number) => apiFetch<T>(`/orders?page=${page}&limit=${limit}`), create: <T>(items: unknown[], key: string) => apiFetch<T>("/orders", { method: "POST", headers: { "Idempotency-Key": key }, body: JSON.stringify({ items }) }) };

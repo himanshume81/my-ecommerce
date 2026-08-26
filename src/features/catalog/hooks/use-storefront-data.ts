@@ -6,20 +6,21 @@ import { productService } from "@/features/catalog/services/products.service";
 import { getListItems } from "@/lib/api/utils";
 import {
   normalizeProduct,
-  products as fallbackProducts,
   type Category,
   type Product,
 } from "@/types/product";
 
 export function useStorefrontData() {
-  const [products, setProducts] = useState<Product[]>(fallbackProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
 
     async function load() {
       try {
+        setIsLoading(true);
         const categoryResponse = await categoryService.list();
         if (!active) {
           return;
@@ -39,7 +40,16 @@ export function useStorefrontData() {
           ),
         );
       } catch {
-        // Keep fallback catalog data if the API is unavailable.
+        if (!active) {
+          return;
+        }
+
+        setCategories([]);
+        setProducts([]);
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
     }
 
@@ -50,5 +60,5 @@ export function useStorefrontData() {
     };
   }, []);
 
-  return { products, categories };
+  return { products, categories, isLoading };
 }

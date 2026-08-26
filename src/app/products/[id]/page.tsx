@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/atoms/add-to-cart-button";
 import { PageShell } from "@/components/common/page-shell";
-import { categoryService, productService } from "@/services/api";
+import { categoryService } from "@/features/catalog/services/categories.service";
+import { productService } from "@/features/catalog/services/products.service";
+import { getListItems } from "@/lib/api/utils";
 import { normalizeProduct } from "@/types/product";
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +12,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 	try {
 		const id = (await params).id;
 		const [productResponse, categoryResponse] = await Promise.all([productService.detail(id), categoryService.list()]);
-		const categories = Array.isArray(categoryResponse) ? categoryResponse : categoryResponse.items ?? categoryResponse.data ?? [];
+		const categories = getListItems(categoryResponse);
 		product = normalizeProduct(productResponse, categories);
 	} catch {
 		notFound();

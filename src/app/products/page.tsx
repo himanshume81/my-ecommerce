@@ -1,17 +1,15 @@
 import { PageShell } from "@/components/common/page-shell";
 import { ProductCard } from "@/components/molecules/product-card";
-import { productService, categoryService } from "@/services/api";
+import { categoryService } from "@/features/catalog/services/categories.service";
+import { productService } from "@/features/catalog/services/products.service";
+import { getListItems } from "@/lib/api/utils";
 import { normalizeProduct, type Category } from "@/types/product";
-
-function getItems<T>(response: T[] | { data?: T[]; items?: T[] }): T[] {
-	return Array.isArray(response) ? response : response.items ?? response.data ?? [];
-}
 
 export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
 	const selected = (await searchParams).category;
 	const [productResponse, categoryResponse] = await Promise.all([productService.list(), categoryService.list()]);
-	const apiCategories = getItems(categoryResponse);
-	const products = getItems(productResponse).map((product) => normalizeProduct(product, apiCategories));
+	const apiCategories = getListItems(categoryResponse);
+	const products = getListItems(productResponse).map((product) => normalizeProduct(product, apiCategories));
 	const categories = ["All", ...apiCategories.map((category: Category) => category.name)];
 	const visibleProducts = selected ? products.filter((product) => product.category === selected) : products;
 

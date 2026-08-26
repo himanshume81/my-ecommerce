@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PageShell } from "@/components/common/page-shell";
-import { userService } from "@/services/api";
+import { userService } from "@/features/users/services/users.service";
 
 const schema = z.object({ name: z.string().min(2, "Enter your name"), phoneNumber: z.string().min(7, "Enter a valid phone number") });
 type Values = z.infer<typeof schema>;
